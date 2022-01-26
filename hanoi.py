@@ -1,8 +1,12 @@
+# hanoi algorithms
 def move(src, to, res):
     res.append((src, to))
 
 
 def hanoi(src, to, via, n, res):
+    """
+    Returns the list of moves necessary to move the tower of size n from 'src' pole to 'to' pole using 'via' pole
+    """
     if n == 1:
         move(src, to, res)
     else:
@@ -24,6 +28,10 @@ def _hanoi(src, to, via, n, res):
 
 
 def bicolor_hanoi(src, to, via, n, res):
+    """
+    Returns the list of moves necessary to split the n discs from 'src' pole
+    among the 'via' and 'to' separating discs by color (whether discs index is odd or even)
+    """
     assert n % 2 == 0, "Invalid argument. n must be even"
     if _hanoi(src, via, to, n - 1, res):
         return  # move all to the left

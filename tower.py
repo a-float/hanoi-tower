@@ -1,9 +1,14 @@
 from kivy.animation import Animation
+from kivy.uix.image import Image
 from kivy.uix.widget import Widget
 from kivy.graphics import Color, Rectangle
 
 
 class Tower(Widget):
+    """Manages a single tower. Is manipulated by the TowerManager"""
+
+    arrow = Image(source='arrow.png')
+
     def __init__(self, index, max_discs_no, **kwargs):
         super().__init__(**kwargs)
         self.index = index
@@ -12,11 +17,11 @@ class Tower(Widget):
         self.max_discs_no = max_discs_no  # == max radius
         self.target_tower = None
         self.select_marker = None
-        self.disc_height = lambda: min((self.height * 0.06, self.height*0.53/self.max_discs_no))
+        self.disc_height = lambda: min((self.height * 0.06, self.height * 0.53 / self.max_discs_no))
         self.get_disc_y_pos = lambda n: self.height * 0.22 + n * self.disc_height()
         # Arranging Canvas
         with self.canvas:
-            Color(1, 1, 0)  # set the pole color
+            Color(190 / 256, 140 / 256, 54 / 256)  # set the pole color
             # Setting the size and position of canvas
             self.rod = Rectangle()
             self.rod_base = Rectangle()
@@ -26,20 +31,20 @@ class Tower(Widget):
     # update function which makes the canvas adjustable.
     def _update_tower(self, *args):
         self.rod.pos = (self.center_x - self.width / 200, self.height * 0.2)
-        self.rod.size = (self.width / 100, self.height * 0.6)
-        self.rod_base.pos = (self.center_x - self.width * 0.4, self.height * 0.2)
-        self.rod_base.size = (self.width * 0.8, self.height * 0.02)
+        self.rod.size = (self.width / 50, self.height * 0.6)
+        self.rod_base.pos = (self.center_x - self.width * 0.4, self.height * 0.190)
+        self.rod_base.size = (self.width * 0.8, self.height * 0.03)
 
         for i in range(len(self.discs)):
             self._update_disc(i, self.disc_data[i][0])
 
         if self.select_marker:
-            self.select_marker.pos = (self.center_x - self.width * 0.3, self.height * 0.1)
-            self.select_marker.size = (self.width * 0.6, self.height * 0.07)
+            self.select_marker.pos = (self.center_x - self.width * 0.1, self.height * .05)
+            self.select_marker.size = (self.width * 0.2, self.height * 0.1)
 
     def add_disc(self, radius, hue):
         with self.canvas:
-            Color(hue, 1, 1, mode='hsv')
+            Color(hue, .8, .95, mode='hsv')
             disc = Rectangle()
             self.discs.append(disc)
             self._update_disc(len(self.discs) - 1, radius)
@@ -48,8 +53,10 @@ class Tower(Widget):
     def toggle_selected(self):
         if not self.select_marker:
             with self.canvas:
-                Color(0.5, 0.5, 0)
+                Color(50/256, 195/256, 240/256)
                 self.select_marker = Rectangle()
+                self.select_marker.texture = Tower.arrow.texture
+                self.select_marker.size = Tower.arrow.size
             self._update_tower()
         else:
             self.canvas.remove(self.select_marker)
@@ -73,13 +80,14 @@ class Tower(Widget):
             self.remove_disc()
 
     def _on_move_complete(self, instance, widget):
-        self.target_tower.add_disc(*self.disc_data[-1])
-        self.remove_disc()
-        self.parent.step()
+        if self.disc_data:  # make sure simulation was not stopped during animation
+            self.target_tower.add_disc(*self.disc_data[-1])
+            self.remove_disc()
+            self.parent.step()
 
     def move_disc_to(self, target_tower):
         if not self.discs:
-            print("Cant move a disc out of an empty tower :C")
+            print("Can't move a disc out of an empty tower :C")
             return
         disc = self.discs[-1]
         self.target_tower = target_tower
